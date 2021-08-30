@@ -1,0 +1,33 @@
+<h2 id="initial-enumeration-">Initial enumeration:</h2>
+<p>With this box we start with nmap: </p>
+<p>
+  <code>sudo nmap -T4 -p- the ip of the funbox vm</code>
+</p>
+<p>We have 80 and 22, possibly 33060 <br>Quick overview: <br>
+  <code>Port 80 is HTTP</code>
+  <br>
+  <code>Port 22 is SSH</code>
+  <br>
+  <code>Port 33060 is MySQL</code> from the port 3306 (they just happened to add an extra 0)
+</p>
+<p>If we dirb it we find a gym page, a secret page and an admin login page. <br>To dirb a page write: <br>
+  <code>dirb http://ip of the vm box here</code>
+</p>
+<p>Some more time later using dirb we fnd a store page which is a bookstore. </p>
+<p>The admin, secret and gym pages do nothing useful. </p>
+<p>What you want is the store page. </p>
+<p>In the store page there is an admin log in at the bottom of the page. Navigate to the store admin page and use the creds admin:admin <br>(Default creds are usually admin admin or admin password) </p>
+<p>After logging as admin, we can now upload new books, complete with image upload facilities. <br>Time to upload a reverse shell, access it and catch it as per usual. </p>
+<p>For context: <br>We catch a reverse shell with netcat after uploading it to the new book page we got as admin. <br>Since the shell will be uploaded using the image upload feature, it will be stored in the image folder. Click on it, have your netcat ready and you should get a connection. </p>
+<h2 id="user-shell-">User shell:</h2>
+<p>You should now have shell as www-data. </p>
+<p>Looking around the system there is a file called password.txt </p>
+<p>In this file you find creds for a user called Tony among creds for other services such as the before mentioned bookstore admin page. <br>Copy these creds over and login with SSH. We will login with SSH as the user Tony. </p>
+<h2 id="root-shell-">Root shell:</h2>
+<p>Once logged in as Tony check your sudo privs by running sudo -l </p>
+<p>It appears that Tony can run a lot of applications as root using the sudo rights. There are many privilige escalation opportunities since there are many binaries the Tony user can run. </p>
+<p>Some priv esc examples for this users are: pkexec and time </p>
+<p>To gain root using the time binary: simply write <code>sudo time /bin/bash</code>
+  <br>Alternatively to use pkexec: simply write <code>sudo pkexec /bin/bash</code>
+</p>
+<h2 id="boom-root-">Boom root!</h2>
